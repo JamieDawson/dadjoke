@@ -1,6 +1,3 @@
 commands:
-  hello:
-    description: Say "Hello" to the world or to the name provided.
-    parameters:
-      - name: name
-        optional: true
+  dadjoke:
+    description: A Command Set that displays random dad jokes.

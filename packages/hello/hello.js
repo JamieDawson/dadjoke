@@ -1,33 +1,29 @@
-'use strict';
+// jshint esversion: 9
 
 /**
- * @description Says "Hello, world!" or "Hello, <name>" when the name is provided.
+ * @description null
  * @param {ParamsType} params list of command parameters
  * @param {?string} commandText text message
  * @param {!object} [secrets = {}] list of secrets
  * @return {Promise<SlackBodyType>} Response body
  */
-async function _command(params, commandText, secrets) {
-  const {name = 'World'} = params;
-  // This array is used to store slack blocks.
-  const result = [];
 
-  if (secrets && secrets.helloworld) {
-    result.push({
-      type: 'section',
-      text: {type: 'mrkdwn', text: `I FOUND A SECRET!`}
-    });
+const dadJokeLink = "https://icanhazdadjoke.com/slack";
+
+async function _command(params, commandText, secrets = {}) {
+  const axios = require('axios');
+  let response;
+  
+  try {
+    const url = `${dadJokeLink}`;
+    response = await axios.get(url);
+  }catch(err){
+    return null;
   }
 
-  result.push({
-    type: 'section',
-    text: {type: 'mrkdwn', text: `Hello, ${name}!`}
-  });
-
   return {
-    // Or `ephemeral` for private response
-    response_type: 'in_channel', // eslint-disable-line camelcase
-    blocks: result
+    response_type: 'in_channel', // or `ephemeral` for private response
+    text: response.data.attachments[0].fallback
   };
 }
 
@@ -36,12 +32,10 @@ async function _command(params, commandText, secrets) {
  * @property {string} text
  * @property {'in_channel'|'ephemeral'} [response_type]
  */
-const main = async args => ({
-  body: await _command(
-    args.params,
-    args.commandText,
-    args.__secrets || {}
-  ).catch(error => ({
+
+const main = async (args) => ({
+  body: await _command(args.params, args.commandText, args.__secrets || {}).catch(error => ({
+    // To get more info, run `/nc activation_log` after your command executes
     response_type: 'ephemeral',
     text: `Error: ${error.message}`
   }))
